@@ -14,3 +14,19 @@ To fly around in MAP01
 Code lifted and hacked to death from:
 - export_level.py - https://github.com/jminor/omgifol/blob/master/demo/wad2obj.py
 - obj2egg.py - http://panda3d.org/phpbb2/viewtopic.php?t=3378
+
+# TODO
+## Cleanup
+- `export_level.py`
+ - Refactor and Document changes
+ - Mostly around transparency and tile stamps
+- `obj2egg.py`
+ - Refactor and Document changes
+ - Collision mask hard-coded values :(
+- `map_viewer.py`
+ - Make collision toggleable
+ 
+ ## Later
+ - Some geometry wierdness in exporting to fix
+ - Export and apply Lighting
+ - Thing(s), player spawn point a priority
