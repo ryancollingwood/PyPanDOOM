@@ -1,0 +1,3 @@
+omgifol==0.4.0
+panda3d==1.10.2
+Pillow==6.0.0

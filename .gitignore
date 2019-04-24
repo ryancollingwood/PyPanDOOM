@@ -112,3 +112,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# vscode settings
+.vscode/
+
+# export folder
+export/
+
+# wad files - get your own
+wad/DOOM2.wad
+wad/DOOM.wad

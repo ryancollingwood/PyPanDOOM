@@ -1,0 +1,1 @@
+tested it with DOOM2.WAD - FreeDoom should work?
