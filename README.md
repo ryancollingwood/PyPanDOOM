@@ -20,9 +20,11 @@ Code lifted and hacked to death from:
 `export_level.py`
  - Refactor and Document changes
  - Mostly around transparency and tile stamps
+ 
 `obj2egg.py`
  - Refactor and Document changes
  - Collision mask hard-coded values :(
+ 
 `map_viewer.py`
  - Make collision toggleable
  
