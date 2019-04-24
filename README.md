@@ -17,13 +17,13 @@ Code lifted and hacked to death from:
 
 # TODO
 ## Cleanup
-- `export_level.py`
+`export_level.py`
  - Refactor and Document changes
  - Mostly around transparency and tile stamps
-- `obj2egg.py`
+`obj2egg.py`
  - Refactor and Document changes
  - Collision mask hard-coded values :(
-- `map_viewer.py`
+`map_viewer.py`
  - Make collision toggleable
  
  ## Later
