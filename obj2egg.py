@@ -579,7 +579,7 @@ def main(argv=None):
             obj = ObjFile(infile)
             egg = obj.toEgg()
             f, e = os.path.splitext(infile)
-            outfile = f + ".egg"
+            outfile = f.lower() + ".egg"
             for o, a in opts:
                 if o in ("-n", "--normals"):
                     egg.recomputeVertexNormals(float(a))

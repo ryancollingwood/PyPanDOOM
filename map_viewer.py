@@ -7,6 +7,9 @@ mouse - look around
 """
 
 import sys
+from os import path
+import csv
+from collections import namedtuple
 from direct.showbase.ShowBase import ShowBase
 import direct.directbase.DirectStart
 from pandac.PandaModules import *
@@ -24,15 +27,34 @@ class FPS(ShowBase):
         self.level_name = level_name
         self.initCollision()
         self.loadLevel()
-        self.initPlayer()
+        self.things = list()
+        self.node = None
+
         base.accept( "escape" , sys.exit)
         base.disableMouse()        
+
+        csv_file = f"export/{level_name}.csv"
+        print(csv_file)
+        if path.exists(csv_file):
+            print("loading things", csv_file)
+
+            with open(csv_file) as infile:
+                reader = csv.reader(infile)
+                Data = namedtuple("Thing", next(reader))  # get names from column headers
+                for data in map(Data._make, reader):
+                    self.things.append(data)
+                    if data.type == "1":
+                        self.initPlayer(float(data.x), float(data.y))
+                        print(f"spawning player at {data.x}, {data.y}")
+        else:
+            self.initPlayer(0, 0)
+
         OnscreenText(text=__doc__, style=1, fg=(1,1,1,1),
             pos=(-1.3, 0.95), align=TextNode.ALeft, scale = .05)
 
         self.gps_text = OnscreenText(text="", style=1, fg=(1,1,1,1),
                     pos=(1.3,-0.95), align=TextNode.ARight, scale = .07)
-
+    
         taskMgr.add(self.update_gps_text, 'update_gps_text')
 
         
@@ -53,12 +75,13 @@ class FPS(ShowBase):
         self.level.reparentTo(render)
         self.level.setTwoSided(True)
                 
-    def initPlayer(self):
+    def initPlayer(self, x, y):
         """ loads the player and creates all the controls for him"""
-        self.node = Player()
+        self.node = Player(x, y)
 
     def update_gps_text(self, task):
-        self.gps_text.text = str(self.node.getPos())
+        if self.node is not None:
+            self.gps_text.text = str(self.node.getPos())
         return task.cont
         
 class Player(object):
@@ -78,8 +101,12 @@ class Player(object):
     readyToJump = False
     jump = 0
     
-    def __init__(self):
+    def __init__(self, x, y):
         """ inits the player """
+        self.node = None
+        self.x = x
+        self.y = y
+
         self.loadModel()
         self.setUpCamera()
         #self.createCollisions()
@@ -93,7 +120,7 @@ class Player(object):
         """ make the nodepath for player """
         self.node = NodePath('player')
         self.node.reparentTo(render)
-        self.node.setPos(80,-740,120)
+        self.node.setPos(self.x, self.y, 50)
         self.node.setScale(1)
 
     def getPos(self):
@@ -175,5 +202,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         map_name = sys.argv[1] 
     
-    FPS(map_name)
+    FPS(map_name.lower())
     base.run() 

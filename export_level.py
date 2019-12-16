@@ -104,7 +104,7 @@ class Polygon:
             for chain in chains]
 
 def objmap(wad, name, filename, textureNames, textureSizes, centerVerts):
-    edit = mapedit.MapEditor(wad.maps[name])
+    edit = mapedit.MapEditor(wad.maps[name.upper()])
 
     # first lets get into the proper coordinate system
     v = edit.vertexes[0]
@@ -136,6 +136,11 @@ def objmap(wad, name, filename, textureNames, textureSizes, centerVerts):
             polys.append(poly)
 
     ti = 1  # vertex texture index (starting at 1 for the 1st "vt" statement)
+
+    with open(filename.replace(".obj", ".csv"), "w") as out:
+        out.write("x,y,angle,type\n")
+        for thing in edit.things:        
+            out.write(f"{thing.x *-1 },{thing.y *-1},{thing.angle},{thing.type}\n")
 
     with open(filename, "w") as out:
         out.write("# %s\n" % name)
@@ -436,9 +441,9 @@ def execute(source_wad, list_maps, output_dir, center_map_origin):
     textureNames, textureSizes = writemtl(inwad)
 
     for mapName in inwad.maps.keys():
-        objfile = mapName+".obj"
+        objfile = mapName.lower()+".obj"
         print("Writing %s" % objfile)
-        objmap(inwad, mapName, objfile, textureNames, textureSizes, center_map_origin)
+        objmap(inwad, mapName.lower(), objfile, textureNames, textureSizes, center_map_origin)
 
 def main():
     args = parse_args()
@@ -448,11 +453,17 @@ def main():
 """
 Sample code for debugging...
 from omg import wad, txdef, mapedit
-w = wad.WAD('doom.wad')
+w = wad.WAD('wad/doom.wad')
 t = txdef.Textures(w.txdefs)
 flat = w.flats['FLOOR0_1']
 map = w.maps['E1M1']
 edit = mapedit.MapEditor(map)
+
+# get player start point
+player_start = [x for x in edit.things if x.type == 1]
+player_start_x = player_start[0].x * -1
+player_start_y = player_start[0].y * -1
+player_start_angle = player_start[0].angle
 """
 
 if __name__ == "__main__":
