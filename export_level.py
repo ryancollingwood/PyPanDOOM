@@ -8,7 +8,7 @@ modern game engine.
 """
 
 # python
-import math, argparse, os, sys
+import math, argparse, os, sys, re
 from collections import defaultdict
 
 # PIL
@@ -440,10 +440,15 @@ def parse_args():
             help="Translate the output vertices so the center of the map is at the origin.")
     return parser.parse_args()
 
-def execute(source_wad, list_maps, output_dir, center_map_origin, textureNames, textureSizes):
+def execute(source_wad, list_maps, output_dir, center_map_origin, textureNames, textureSizes, maps = None):
     print("Loading %s..." % source_wad)
     inwad = wad.WAD()
     inwad.from_file(source_wad)
+    map_regex = None
+    try:
+        map_regex = re.compile(maps)
+    except Exception:
+        print("Couldn't compile map search expression - getting all maps")
 
     if list_maps:
         print("Found %d maps:" % len(inwad.maps))
@@ -459,6 +464,10 @@ def execute(source_wad, list_maps, output_dir, center_map_origin, textureNames, 
     textureNames, textureSizes = writemtl(inwad, textureNames, textureSizes)
 
     for mapName in inwad.maps.keys():
+        if map_regex is not None:
+            if len(map_regex.findall(mapName)) == 0:
+                continue
+
         objfile = mapName.lower()+".obj"
         print("Writing %s" % objfile)
         objmap(inwad, mapName.lower(), objfile, textureNames, textureSizes, center_map_origin)
@@ -477,7 +486,7 @@ def main():
     wads_to_process = args.source_wad.split(",")
 
     for wad_to_proces in wads_to_process:
-        textureNames, textureSizes = execute(wad_to_proces.strip(), args.list, args.output, args.center, textureNames, textureSizes)
+        textureNames, textureSizes = execute(wad_to_proces.strip(), args.list, args.output, args.center, textureNames, textureSizes, args.maps)
 
 """
 Sample code for debugging...

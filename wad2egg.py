@@ -1,0 +1,140 @@
+import math, argparse, os, sys, re
+from typing import List
+from omg import txdef, wad, mapedit, util
+
+
+class Wad2Egg:
+    def __init__(
+            self,
+            wads_to_process: List,
+            output_dir: str = "export/",
+            map_pattern: str = "",
+    ):
+        self.wads_to_process = wads_to_process
+        self.output_dir = output_dir
+        self.current_dir = os.getcwd()
+
+        self.map_matcher = None
+        if map_pattern:
+            self.map_matcher = re.compile(map_pattern)
+
+        self.textures_names = None
+        self.texture_sizes = None
+
+    def execute(self):
+        for wad_file in self.wads_to_process:
+            self.execute_wad(wad_file)
+
+    def execute_wad(self, wad_file: str):
+        input_wad = wad.WAD()
+        input_wad.from_file(wad_file)
+
+        # export textures
+
+        for level_map in input_wad.maps.keys():
+            self.execute_level(input_wad, level_map)
+
+    def execute_level(self, input_wad, level_name):
+        if self.map_matcher is not None:
+            if len(self.map_matcher.findall(level_name)) == 0:
+                return
+
+        egg_file = level_name.lower()+".egg"
+        print("Writing %s" % egg_file)
+        edit = mapedit.MapEditor(input_wad.maps[level_name.upper()])
+
+        sectors = self.get_sectors(level_name, edit)
+
+    def write_csv(self, level_name, collection_name, headers: List, items):
+        # do this instead: https://stackoverflow.com/a/109106/2805700
+        file_name = f"{self.output_dir}/{level_name}_{collection_name}.csv".lower()
+        print(f"csv: {file_name}")
+
+        with open(file_name, "w") as out:
+            csv_header = ",".join(["index"]+headers)
+            out.write(f"{csv_header}\n")
+            for i, item in enumerate(items):
+                values = [str(i)]
+
+                for attr in headers:
+                    value = item.__getattribute__(attr)
+                    if value is None:
+                        value = ""
+                    values.append(str(value))
+
+                values_csv = ",".join(values)
+                out.write(f"{values_csv}\n")
+                print(values_csv)
+
+    def get_sectors(self, level_name, edit):
+        self.write_csv(
+            level_name,
+            "sectors",
+            [
+                "type",
+                "tag",
+                "z_floor",
+                "z_ceil",
+                "tx_floor",
+                "tx_ceil",
+                "light",
+            ],
+            edit.sectors
+        )
+
+    def get_linedefs(self, level_name, edit):
+        self.write_csv(
+            level_name,
+            "linedefs",
+            [
+                "type",
+                "tag",
+                "z_floor",
+                "z_ceil",
+                "tx_floor",
+                "tx_ceil",
+                "light",
+            ],
+            edit.linedefs
+        )
+
+
+def parse_args():
+    """ parse arguments out of sys.argv """
+
+    epilog = "Example: wad2obj.py doom.wad -m 'E1*' -o /tmp"
+
+    parser = argparse.ArgumentParser(description=__doc__, epilog=epilog)
+    parser.add_argument(
+            'source_wad', type=str, help='Path to the input WAD file.')
+    parser.add_argument(
+            '-l','--list', action='store_true', default=False,
+            help="List the names of the maps in the source wad without exporting anything.")
+    parser.add_argument(
+            '-m','--maps', type=str, default='*', metavar='PATTERN',
+            help="Pattern of maps to export (e.g. 'MAP*' or 'E?M1'). Use * as a wildcard or ? as any single character.")
+    parser.add_argument(
+            '-o','--output', type=str, default='.', metavar='PATH',
+            help="Directory path where output files will be written.")
+    parser.add_argument(
+            '-c','--center', action='store_true', default=False,
+            help="Translate the output vertices so the center of the map is at the origin.")
+    return parser.parse_args()
+
+
+def main(*args):
+    args = parse_args()
+    print(args)
+
+    wads_to_process = args.source_wad.split(",")
+
+    wad2egg = Wad2Egg(
+        wads_to_process,
+        args.output,
+        args.maps
+    )
+    wad2egg.execute()
+
+
+if __name__ == "__main__":
+    main()
