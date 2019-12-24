@@ -130,6 +130,15 @@ def objmap(wad, name, filename, textureNames, textureSizes, centerVerts):
 
     _polygons_with_line_definitions(edit, vi, vertexes, textureSizes, polys)
 
+    with open(filename.replace(".obj", "_linedefs.csv"), "w") as out:
+        out.write("x,y,action\n")
+        for line in edit.linedefs:
+            if line.action > 0:
+                p1 = edit.vertexes[line.vx_a]
+                p2 = edit.vertexes[line.vx_b]
+                out.write(f"{p1.x},{p1.y},{line.action}\n")
+                out.write(f"{p2.x},{p2.y},{line.action}\n")
+
     for sector in edit.sectors:
         for poly in (sector.floor, sector.ceil):
             poly.combineSegments()
@@ -140,7 +149,7 @@ def objmap(wad, name, filename, textureNames, textureSizes, centerVerts):
     with open(filename.replace(".obj", ".csv"), "w") as out:
         out.write("x,y,angle,type\n")
         for thing in edit.things:        
-            out.write(f"{thing.x *-1 },{thing.y *-1},{thing.angle},{thing.type}\n")
+            out.write(f"{thing.x*-1},{thing.y*-1},{thing.angle},{thing.type}\n")
 
     with open(filename, "w") as out:
         out.write("# %s\n" % name)
@@ -325,12 +334,21 @@ def has_transparency(im):
     
     return (255, 0, 255) in by_color and by_color[(255, 0, 255)] > 0 
 
-def writemtl(wad):
+def writemtl(wad, names, textureSizes):
+
+    # in the case of level wad that has no custom textures
+    t = txdef.Textures(wad.txdefs)
+    if len(t) == 0:
+        return names, textureSizes
+
     out = open("doom.mtl", "w")
     out.write("# doom.mtl\n")
 
-    names = []
-    textureSizes = {}
+    if names is None:
+        names = []
+
+    if textureSizes is None:
+        textureSizes = {}
 
     # + wad.patches.items() # + wad.graphics.items() + wad.sprites.items()
     textures = wad.flats.items()
@@ -340,7 +358,6 @@ def writemtl(wad):
         _texture_written_to(out, name)
         names.append(name)
 
-    t = txdef.Textures(wad.txdefs)
     for name,texture_definition in t.items():
         image = Image.new(
                 'RGB',
@@ -423,7 +440,7 @@ def parse_args():
             help="Translate the output vertices so the center of the map is at the origin.")
     return parser.parse_args()
 
-def execute(source_wad, list_maps, output_dir, center_map_origin):
+def execute(source_wad, list_maps, output_dir, center_map_origin, textureNames, textureSizes):
     print("Loading %s..." % source_wad)
     inwad = wad.WAD()
     inwad.from_file(source_wad)
@@ -435,20 +452,32 @@ def execute(source_wad, list_maps, output_dir, center_map_origin):
         sys.exit(0)
 
     # lets make sure all output files are written here
+    cwd = os.getcwd()
     os.chdir(output_dir)
 
     # export the textures first, so we know all their sizes
-    textureNames, textureSizes = writemtl(inwad)
+    textureNames, textureSizes = writemtl(inwad, textureNames, textureSizes)
 
     for mapName in inwad.maps.keys():
         objfile = mapName.lower()+".obj"
         print("Writing %s" % objfile)
         objmap(inwad, mapName.lower(), objfile, textureNames, textureSizes, center_map_origin)
 
+    os.chdir(cwd)
+
+    return textureNames, textureSizes
+
 def main():
     args = parse_args()
     print(args)
-    execute(args.source_wad, args.list, args.output, args.center)
+
+    textureNames = None
+    textureSizes = None
+
+    wads_to_process = args.source_wad.split(",")
+
+    for wad_to_proces in wads_to_process:
+        textureNames, textureSizes = execute(wad_to_proces.strip(), args.list, args.output, args.center, textureNames, textureSizes)
 
 """
 Sample code for debugging...

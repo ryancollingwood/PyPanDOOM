@@ -16,6 +16,9 @@ from pandac.PandaModules import *
 from direct.gui.OnscreenText import OnscreenText
 import sys
 
+from panda3d.bullet import BulletSphereShape
+from panda3d.bullet import BulletWorld
+
 
 class FPS(ShowBase):
     """
@@ -24,11 +27,15 @@ class FPS(ShowBase):
     """
     def __init__(self, level_name = "map01"):
         """ create a FPS type game """
+        self.world = BulletWorld()
+        self.world.setGravity(Vec3(0, 0, -9.81))
+        
         self.level_name = level_name
         self.initCollision()
         self.loadLevel()
         self.things = list()
         self.node = None
+
 
         base.accept( "escape" , sys.exit)
         base.disableMouse()        
@@ -96,9 +103,11 @@ class Player(object):
     STOP = Vec3(0)
     UP = Vec3(0, 0, 1)
     DOWN = Vec3(0, 0, -1)
+
     walk = STOP
     strafe = STOP
     readyToJump = False
+    use = False
     jump = 0
     
     def __init__(self, x, y):
@@ -115,6 +124,7 @@ class Player(object):
         # init mouse update task
         taskMgr.add(self.mouseUpdate, 'mouse-task')
         taskMgr.add(self.moveUpdate, 'move-task')
+        taskMgr.add(self.useUpdate, 'use-task')
         
     def loadModel(self):
         """ make the nodepath for player """
@@ -178,6 +188,9 @@ class Player(object):
         base.accept( "d" , self.__setattr__,["strafe",self.RIGHT] )
         base.accept( "a-up" , self.__setattr__,["strafe",self.STOP] )
         base.accept( "d-up" , self.__setattr__,["strafe",self.STOP] )
+
+        base.accept("e", self.__setattr__,["use", True] )
+        base.accept("e-up", self.__setattr__, ["use", False])
         
     def mouseUpdate(self,task):
         """ this task updates the mouse """
@@ -196,11 +209,36 @@ class Player(object):
         self.node.setFluidPos(self.node,self.strafe*globalClock.getDt()*self.speed)
         return task.cont
 
+    def useUpdate(self, task):
+        if self.use:
+            pMouse = base.mouseWatcherNode.getMouse()
+            pFrom = Point3()
+            pTo = Point3()
+            base.camLens.extrude(pMouse, pFrom, pTo)
+
+            # Transform to global coordinates
+            pFrom = render.getRelativePoint(base.cam, pFrom)
+            pTo = render.getRelativePoint(base.cam, pTo)
+
+            shape = BulletSphereShape(0.5)
+            penetration = 0.0
+
+            result = world.sweepTestClosest(shape, pFrom, pTo, penetration)
+
+            print(result.hasHit())
+            print(result.getHitPos())
+            print(result.getHitNormal())
+            print(result.getHitFraction())
+            print(result.getNode())
+
+        return task.cont
+
+
 if __name__ == "__main__":
-    map_name = "map01"
+    map_name = "e1m1"
 
     if len(sys.argv) > 1:
         map_name = sys.argv[1] 
     
     FPS(map_name.lower())
-    base.run() 
+    base.run()

@@ -4,6 +4,8 @@ Export DOOM levels from WAD to .obj, then convert to .egg to view in the Panda3d
 
 To export levels to .obj and textures to PNG
 `python export_level.py -o "export/" wad/DOOM2.wad`
+or to export your own level based off of another wad (order matters!)
+`python export_level.py -o "export/" "wad/DOOM2.wd,wad/TEST.wad"` 
 
 To convert .obj level to .egg for Panda3d
 `python obj2egg.py export/map01.obj`
