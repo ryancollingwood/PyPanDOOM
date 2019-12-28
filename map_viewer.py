@@ -184,18 +184,18 @@ class Player(object):
         base.accept( "control", self.__setattr__,["walk",self.DOWN])
         base.accept( "control-up", self.__setattr__,["walk",self.STOP])
 
-        base.accept( "s" , self.__setattr__,["walk",self.STOP] )
-        base.accept( "w" , self.__setattr__,["walk",self.FORWARD])
-        base.accept( "s" , self.__setattr__,["walk",self.BACK] )
-        base.accept( "s-up" , self.__setattr__,["walk",self.STOP] )
-        base.accept( "w-up" , self.__setattr__,["walk",self.STOP] )
-        base.accept( "a" , self.__setattr__,["strafe",self.LEFT])
-        base.accept( "d" , self.__setattr__,["strafe",self.RIGHT] )
-        base.accept( "a-up" , self.__setattr__,["strafe",self.STOP] )
-        base.accept( "d-up" , self.__setattr__,["strafe",self.STOP] )
+        base.accept( "d" , self.__setattr__,["walk",self.STOP] )
+        base.accept( "e" , self.__setattr__,["walk",self.FORWARD])
+        base.accept( "d" , self.__setattr__,["walk",self.BACK] )
+        base.accept( "d-up" , self.__setattr__,["walk",self.STOP] )
+        base.accept( "e-up" , self.__setattr__,["walk",self.STOP] )
+        base.accept( "s" , self.__setattr__,["strafe",self.LEFT])
+        base.accept( "f" , self.__setattr__,["strafe",self.RIGHT] )
+        base.accept( "s-up" , self.__setattr__,["strafe",self.STOP] )
+        base.accept( "f-up" , self.__setattr__,["strafe",self.STOP] )
 
-        base.accept("e", self.__setattr__,["use", True] )
-        base.accept("e-up", self.__setattr__, ["use", False])
+        base.accept("r", self.__setattr__,["use", True] )
+        base.accept("r-up", self.__setattr__, ["use", False])
         
     def mouseUpdate(self,task):
         """ this task updates the mouse """
