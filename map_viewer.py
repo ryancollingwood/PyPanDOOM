@@ -11,14 +11,19 @@ from os import path
 import csv
 from collections import namedtuple
 from direct.showbase.ShowBase import ShowBase
+
+from panda3d.core import loadPrcFileData
+loadPrcFileData("", "want-directtools #t")
+loadPrcFileData("", "want-tk #t")
+
 import direct.directbase.DirectStart
-from pandac.PandaModules import *
 from direct.gui.OnscreenText import OnscreenText
 import sys
 
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletWorld
 
+from panda3d.core import *
 
 class FPS(ShowBase):
     """
@@ -219,17 +224,6 @@ class Player(object):
             # Transform to global coordinates
             pFrom = render.getRelativePoint(base.cam, pFrom)
             pTo = render.getRelativePoint(base.cam, pTo)
-
-            shape = BulletSphereShape(0.5)
-            penetration = 0.0
-
-            result = world.sweepTestClosest(shape, pFrom, pTo, penetration)
-
-            print(result.hasHit())
-            print(result.getHitPos())
-            print(result.getHitNormal())
-            print(result.getHitFraction())
-            print(result.getNode())
 
         return task.cont
 
