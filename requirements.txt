@@ -1,4 +1,4 @@
 omgifol==0.4.0
 panda3d==1.10.2
-Pillow==6.2.0
+Pillow==9.3.0
 Pmw==2.0.1
